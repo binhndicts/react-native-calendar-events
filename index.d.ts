@@ -112,7 +112,7 @@ export interface CalendarEventReadable extends CalendarEventBase {
   alarms?: Array<Alarm<ISODateString>>;
 }
 
-export interface CalendarEventWritable extends CalendarEventBase {
+export interface CalendarEventWritable extends Partial<CalendarEventBase> {
   /** Unique id for the calendar event, used for updating existing events */
   id?: string;
   /** The event's recurrence settings */
