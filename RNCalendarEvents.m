@@ -570,6 +570,9 @@ RCT_EXPORT_MODULE()
     if (event.attendees) {
         NSMutableArray *attendees = [[NSMutableArray alloc] init];
         for (EKParticipant *attendee in event.attendees) {
+            if (attendee.currentUser) {
+                continue;
+            }
 
             NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
             for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"])
