@@ -115,6 +115,7 @@ RCT_EXPORT_MODULE()
     NSString *recurrence = [RCTConvert NSString:details[_recurrence]];
     NSDictionary *recurrenceRule = [RCTConvert NSDictionary:details[_recurrenceRule]];
     NSString *availability = [RCTConvert NSString:details[_availability]];
+    NSArray *attendees = [RCTConvert NSArray:details[_attendees]];
 
     if (eventId) {
         NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
@@ -159,6 +160,10 @@ RCT_EXPORT_MODULE()
 
     if (alarms) {
         calendarEvent.alarms = [self createCalendarEventAlarms:alarms];
+    }
+    
+    if (attendees) {
+        [calendarEvent setValue:[self createCalendarEventAttendees:attendees] forKey:_attendees];
     }
 
     if (recurrence) {
@@ -211,10 +216,10 @@ RCT_EXPORT_MODULE()
 - (NSDictionary *)saveEvent:(EKEvent *)calendarEvent options:(NSDictionary *)options
 {
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:@{@"success": [NSNull null], @"error": [NSNull null]}];
-    NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
+    Boolean futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
     EKSpan eventSpan = EKSpanFutureEvents;
 
-    if (exceptionDate) {
+    if (!futureEvents) {
         eventSpan = EKSpanThisEvent;
     }
 
@@ -231,6 +236,24 @@ RCT_EXPORT_MODULE()
 
 #pragma mark -
 #pragma mark Alarms
+
+- (NSArray *)createCalendarEventAttendees:(NSArray *)attendees
+{
+    NSMutableArray *calendarEventAttendees = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary *attendeeDict in attendees) {
+        Class className = NSClassFromString(@"EKAttendee");
+        NSString *url = [attendeeDict valueForKey:@"url"];
+        NSString *fName = [attendeeDict valueForKey:@"firstName"];
+        NSString *lName = [attendeeDict valueForKey:@"lastName"];
+        id attendee = [className new];
+        [attendee setValue:fName forKey:@"firstName"];
+        [attendee setValue:lName forKey:@"lastName"];
+        [attendee setValue:url forKey:@"emailAddress"];
+        [calendarEventAttendees addObject:attendee];
+    }
+    return [calendarEventAttendees copy];
+}
 
 - (EKAlarm *)createCalendarEventAlarm:(NSDictionary *)alarm
 {
