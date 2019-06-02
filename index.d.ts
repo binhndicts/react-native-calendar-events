@@ -95,6 +95,7 @@ interface CalendarEventBase {
   notes?: string;
   /** ANDROID ONLY - The description associated with the calendar event. */
   description?: string;
+  readonly?: boolean;
 }
 
 export interface CalendarEventReadable extends CalendarEventBase {
