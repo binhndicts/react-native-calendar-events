@@ -7,6 +7,10 @@
 @property (nonatomic, readonly) EKEventStore *eventStore;
 @end
 
+@interface EKEvent(ReadOnlyCheck)
+- (BOOL) isReadOnly;
+@end
+
 static NSString *const _id = @"id";
 static NSString *const _calendarId = @"calendarId";
 static NSString *const _title = @"title";
@@ -712,6 +716,8 @@ RCT_EXPORT_MODULE()
                           forKey:@"structuredLocation"];
         
     }
+    
+    [formedCalendarEvent setValue:@([event isReadOnly]) forKey:@"readonly"];
 
     return [formedCalendarEvent copy];
 }
@@ -966,4 +972,18 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
     });
 }
 
+@end
+
+@implementation EKEvent(ReadOnlyCheck)
+
+- (BOOL) isReadOnly {
+    BOOL readOnly;
+    NSDate *originalDate = self.startDate;
+    
+    self.startDate = [NSDate new];
+    readOnly = originalDate.timeIntervalSince1970 == self.startDate.timeIntervalSince1970;
+    self.startDate = originalDate;
+    
+    return readOnly;
+}
 @end
