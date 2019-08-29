@@ -2,6 +2,7 @@
 #import <React/RCTConvert.h>
 #import <React/RCTUtils.h>
 #import <EventKit/EventKit.h>
+#import <EventKitUI/EventKitUI.h>
 
 @interface RNCalendarEvents ()
 @property (nonatomic, readonly) EKEventStore *eventStore;
@@ -977,13 +978,12 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
 @implementation EKEvent(ReadOnlyCheck)
 
 - (BOOL) isReadOnly {
-    BOOL readOnly;
-    NSDate *originalDate = self.startDate;
-    
-    self.startDate = [NSDate new];
-    readOnly = originalDate.timeIntervalSince1970 == self.startDate.timeIntervalSince1970;
-    self.startDate = originalDate;
-    
-    return readOnly;
+    EKEventViewController *controller = [[EKEventViewController alloc] init];
+    controller.event = self;
+    if(controller.navigationItem.leftBarButtonItem != NULL)
+    {
+        return YES;
+    }
+    return NO;
 }
 @end
