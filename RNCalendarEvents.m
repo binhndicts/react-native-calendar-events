@@ -368,6 +368,20 @@ RCT_EXPORT_MODULE()
     return weekDay;
 }
 
+-(NSString *) parseDayOfTheWeek2String: (EKRecurrenceDayOfWeek *) day
+{
+    switch (day.dayOfTheWeek) {
+        case 2: return @"MO";
+        case 3: return @"TU";
+        case 4: return @"WE";
+        case 5: return @"TH";
+        case 6: return @"FR";
+        case 7: return @"SA";
+        case 1: return @"SU";
+        default: return @"";
+    }
+}
+
 -(NSMutableArray *) createRecurrenceDaysOfWeek: (NSArray *) days
 {
     NSMutableArray *daysOfTheWeek = nil;
@@ -406,7 +420,7 @@ RCT_EXPORT_MODULE()
             recurrenceInterval = interval;
         }
 
-        if (weekPositionInMonth > 0) {
+        if (weekPositionInMonth != 0) {
             setPositions = [NSMutableArray array];
             [setPositions addObject:[NSNumber numberWithInteger: weekPositionInMonth ]];
         }
@@ -526,7 +540,9 @@ RCT_EXPORT_MODULE()
                                                  @"frequency": @"",
                                                  @"interval": @"",
                                                  @"occurrence": @"",
-                                                 @"endDate": @""
+                                                 @"endDate": @"",
+                                                 @"daysOfWeek": @"",
+                                                 @"weekPositionInMonth": @""
                                                  },
                                          _availability: @"",
                                          };
@@ -699,6 +715,19 @@ RCT_EXPORT_MODULE()
 
         if ([[rule recurrenceEnd] occurrenceCount]) {
             [recurrenceRule setValue:@([[rule recurrenceEnd] occurrenceCount]) forKey:@"occurrence"];
+        }
+        
+        if ([rule daysOfTheWeek]) {
+            NSMutableArray *daysOfWeek = [[NSMutableArray alloc] init];
+            for (EKRecurrenceDayOfWeek *dayOfWeek in [rule daysOfTheWeek]) {
+                NSString *day = [self parseDayOfTheWeek2String:dayOfWeek];
+                [daysOfWeek addObject:day];
+            }
+            [recurrenceRule setValue:daysOfWeek forKey:@"daysOfWeek"];
+        }
+        
+        if ([rule setPositions]) {
+            [recurrenceRule setValue:[rule setPositions] forKey:@"weekPositionInMonth"];
         }
 
         [formedCalendarEvent setValue:recurrenceRule forKey:_recurrenceRule];
