@@ -45,7 +45,7 @@ interface RecurrenceRule {
   /** The interval between events of this recurrence. */
   interval: number;
   /** The days of the week associated with the recurrence rule, as an array of 'MO', 'TU'... */
-  daysOfWeek?: any;
+  daysOfWeek?: string[];
   /** Only 'monthly' custom frequency. The weekday's position in month. */
   weekPositionInMonth?: number;
 }

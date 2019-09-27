@@ -488,7 +488,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
             if (recurrenceRule.hasKey("frequency")) {
                 String frequency = recurrenceRule.getString("frequency");
-                String duration = "PT1H";
+                String duration = null;
                 Integer interval = null;
                 Integer occurrence = null;
                 String endDate = null;
@@ -1012,30 +1012,34 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             String[] recurrenceRules = cursor.getString(7).split(";");
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
 
-            if (recurrenceRules.length > 0 && recurrenceRules[0].split("=").length > 1) {
-                event.putString("recurrence", recurrenceRules[0].split("=")[1].toLowerCase());
-                recurrenceRule.putString("frequency", recurrenceRules[0].split("=")[1].toLowerCase());
-            }
-
-            if (cursor.getColumnIndex(CalendarContract.Events.DURATION) != -1 && cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DURATION)) != null) {
-                recurrenceRule.putString("duration", cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DURATION)));
-            }
-
-            if (recurrenceRules.length >= 2 && recurrenceRules[1].split("=")[0].equals("INTERVAL")) {
-                recurrenceRule.putInt("interval", Integer.parseInt(recurrenceRules[1].split("=")[1]));
-            }
-
-            if (recurrenceRules.length >= 3) {
-                if (recurrenceRules[2].split("=")[0].equals("UNTIL")) {
-                    try {
-                        recurrenceRule.putString("endDate", sdf.format(format.parse(recurrenceRules[2].split("=")[1])));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                } else if (recurrenceRules[2].split("=")[0].equals("COUNT")) {
-                    recurrenceRule.putInt("occurrence", Integer.parseInt(recurrenceRules[2].split("=")[1]));
+            for (String rule: recurrenceRules) {
+                String[] value = rule.split("=");
+                switch (value[0]) {
+                    case "FREQ":
+                        event.putString("recurrence", value[1].toLowerCase());
+                        recurrenceRule.putString("frequency", value[1].toLowerCase());
+                        break;
+                    case "INTERVAL":
+                        recurrenceRule.putInt("interval", Integer.parseInt(value[1]));
+                        break;
+                    case "UNTIL":
+                        try {
+                            recurrenceRule.putString("endDate", sdf.format(format.parse(value[1])));
+                            break;
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                            break;
+                        }
+                    case "BYSETPOS":
+                        recurrenceRule.putInt("weekPositionInMonth", Integer.parseInt(value[1]));
+                        break;
+                    case "BYDAY":
+                        recurrenceRule.putArray("daysOfWeek", parseDaysOfWeek(value[1]));
+                        break;
+                    case "COUNT":
+                        recurrenceRule.putInt("occurrence", Integer.parseInt(value[1]));
+                        break;
                 }
-
             }
 
             event.putMap("recurrenceRule", recurrenceRule);
@@ -1068,6 +1072,15 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
 
         return event;
+    }
+
+    private  WritableNativeArray parseDaysOfWeek(String dowString) {
+        WritableNativeArray results = new WritableNativeArray();
+        String[] daysOfWeek = dowString.split(",");
+        for (String day: daysOfWeek) {
+            results.pushString(day);
+        }
+        return results;
     }
 
     private WritableNativeArray serializeEventCalendars(Cursor cursor) {
