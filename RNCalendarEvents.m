@@ -129,13 +129,13 @@ RCT_EXPORT_MODULE()
         calendarEvent = [EKEvent eventWithEventStore:self.eventStore];
         calendarEvent.calendar = [self.eventStore defaultCalendarForNewEvents];
         calendarEvent.timeZone = [NSTimeZone defaultTimeZone];
+    }
 
-        if (calendarId) {
-            EKCalendar *calendar = [self.eventStore calendarWithIdentifier:calendarId];
+    if (calendarId) {
+        EKCalendar *calendar = [self.eventStore calendarWithIdentifier:calendarId];
 
-            if (calendar) {
-                calendarEvent.calendar = calendar;
-            }
+        if (calendar) {
+            calendarEvent.calendar = calendar;
         }
     }
 
