@@ -1007,12 +1007,8 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
 @implementation EKEvent(ReadOnlyCheck)
 
 - (BOOL) isReadOnly {
-    EKEventViewController *controller = [[EKEventViewController alloc] init];
-    controller.event = self;
-    if(controller.navigationItem.leftBarButtonItem != NULL)
-    {
-        return YES;
-    }
+    if (self.calendar.allowsContentModifications == NO) return YES;
+    if (self.organizer && [self.organizer isCurrentUser] == NO) return YES;
     return NO;
 }
 @end
