@@ -172,7 +172,7 @@ RCT_EXPORT_MODULE()
     }
 
     if (recurrence) {
-        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence interval:0 occurrence:0 endDate:nil days: nil weekPositionInMonth: 0];
+        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence interval:0 occurrence:0 endDate:nil days: nil weekPositionInMonth: 0 daysOfTheMonth:nil];
         if (rule) {
             calendarEvent.recurrenceRules = [NSArray arrayWithObject:rule];
         }
@@ -185,8 +185,9 @@ RCT_EXPORT_MODULE()
         NSDate *endDate = [RCTConvert NSDate:recurrenceRule[@"endDate"]];
         NSArray *daysOfWeek = [RCTConvert NSArray:recurrenceRule[@"daysOfWeek"]];
         NSInteger weekPositionInMonth = [RCTConvert NSInteger:recurrenceRule[@"weekPositionInMonth"]];
+        NSArray *daysOfTheMonth = [RCTConvert NSArray:recurrenceRule[@"daysOfTheMonth"]];
 
-        EKRecurrenceRule *rule = [self createRecurrenceRule:frequency interval:interval occurrence:occurrence endDate:endDate days:daysOfWeek weekPositionInMonth: weekPositionInMonth];
+        EKRecurrenceRule *rule = [self createRecurrenceRule:frequency interval:interval occurrence:occurrence endDate:endDate days:daysOfWeek weekPositionInMonth: weekPositionInMonth daysOfTheMonth:daysOfTheMonth];
         if (rule) {
             calendarEvent.recurrenceRules = [NSArray arrayWithObject:rule];
         } else {
@@ -399,7 +400,7 @@ RCT_EXPORT_MODULE()
     return daysOfTheWeek;
 }
 
--(EKRecurrenceRule *)createRecurrenceRule:(NSString *)frequency interval:(NSInteger)interval occurrence:(NSInteger)occurrence endDate:(NSDate *)endDate days:(NSArray *)days weekPositionInMonth:(NSInteger) weekPositionInMonth
+-(EKRecurrenceRule *)createRecurrenceRule:(NSString *)frequency interval:(NSInteger)interval occurrence:(NSInteger)occurrence endDate:(NSDate *)endDate days:(NSArray *)days weekPositionInMonth:(NSInteger) weekPositionInMonth daysOfTheMonth:(NSArray *)daysOfTheMonth
 {
     EKRecurrenceRule *rule = nil;
     EKRecurrenceEnd *recurrenceEnd = nil;
@@ -427,7 +428,7 @@ RCT_EXPORT_MODULE()
         rule = [[EKRecurrenceRule alloc] initRecurrenceWithFrequency:[self frequencyMatchingName:frequency]
                                                             interval:recurrenceInterval
                                                                  daysOfTheWeek:daysOfTheWeekRecurrence
-                                                                 daysOfTheMonth:nil
+                                                                 daysOfTheMonth:daysOfTheMonth
                                                                  monthsOfTheYear:nil
                                                                  weeksOfTheYear:nil
                                                                  daysOfTheYear:nil
@@ -728,6 +729,11 @@ RCT_EXPORT_MODULE()
         
         if ([rule setPositions]) {
             [recurrenceRule setValue:[rule setPositions] forKey:@"weekPositionInMonth"];
+        }
+        
+        // Fix repeat custom in month
+        if ([rule daysOfTheMonth]) {
+            [recurrenceRule setValue:[rule daysOfTheMonth] forKey:@"daysOfTheMonth"];
         }
 
         [formedCalendarEvent setValue:recurrenceRule forKey:_recurrenceRule];
