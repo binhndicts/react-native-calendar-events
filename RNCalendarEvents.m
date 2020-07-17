@@ -129,13 +129,13 @@ RCT_EXPORT_MODULE()
         calendarEvent = [EKEvent eventWithEventStore:self.eventStore];
         calendarEvent.calendar = [self.eventStore defaultCalendarForNewEvents];
         calendarEvent.timeZone = [NSTimeZone defaultTimeZone];
+    }
 
-        if (calendarId) {
-            EKCalendar *calendar = [self.eventStore calendarWithIdentifier:calendarId];
+    if (calendarId) {
+        EKCalendar *calendar = [self.eventStore calendarWithIdentifier:calendarId];
 
-            if (calendar) {
-                calendarEvent.calendar = calendar;
-            }
+        if (calendar) {
+            calendarEvent.calendar = calendar;
         }
     }
 
@@ -1013,12 +1013,8 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
 @implementation EKEvent(ReadOnlyCheck)
 
 - (BOOL) isReadOnly {
-    EKEventViewController *controller = [[EKEventViewController alloc] init];
-    controller.event = self;
-    if(controller.navigationItem.leftBarButtonItem != NULL)
-    {
-        return YES;
-    }
+    if (self.calendar.allowsContentModifications == NO) return YES;
+    if (self.organizer && [self.organizer isCurrentUser] == NO) return YES;
     return NO;
 }
 @end
